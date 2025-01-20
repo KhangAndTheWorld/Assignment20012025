@@ -1,0 +1,104 @@
+﻿@model IEnumerable<Asignment.Models.Event>
+
+@{
+    ViewData["Title"] = "T2308E Admin - Danh sách sản phẩm";
+    Layout = null;
+}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.7.0.js"></script>
+  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+</head>
+<body>
+
+
+<!-- Advanced Search -->
+<div class="card">
+    <h5 class="card-header">List  Search</h5>
+    <div class="card-datatable table-responsive">
+        <table class="dt-advanced-search table border-top">
+            <thead>
+            <tr>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<!--/ Advanced Search -->
+<script>
+    var dataTable = $('.dt-advanced-search');
+    dataTable.DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '/api/events',
+            type: 'GET',
+            data: function (d) {
+                d.page = (d.start / d.length) + 1;
+                d.pageSize = d.length;
+                d.search = d.search.value;
+                d.orderColumn = d.columns[d.order[0].column].data;
+                d.orderDir = d.order[0].dir;
+                return d;
+            },
+            dataSrc: 'data'
+        },
+        columns: [
+            { data: 'id' },
+            { data: 'name' },
+            { data: 'date' },
+            { data: 'status' },
+            {
+                data: null,
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    return '<button class="btn btn-sm btn-primary btn-edit" data-id="' + row.id + '">Sửa</button> ' +
+                        '<button class="btn btn-sm btn-danger btn-delete" data-id="' + row.id + '">Xóa</button> ' +
+                        '<button class="btn btn-sm btn-info btn-detail" data-id="' + row.id + '">Chi tiết</button>';
+                }
+            }
+        ]
+    });
+    dataTable.on('click', '.btn-edit', function () {
+        var productId = $(this).data('id');
+        window.location.href = '/Admin/Events/' + productId;
+    });
+    dataTable.on('click', '.btn-delete', function () {
+        var productId = $(this).data('id');
+        if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này không?")) {
+            $.ajax({
+                url: '/api/Events/' + productId,
+                type: 'DELETE',
+                success: function (result) {
+                    $('.dt-advanced-search').DataTable().ajax.reload();
+                },
+                error: function(error)
+                {
+                    alert('Xóa không thành công, lỗi: ' + error.responseText);
+                }
+            });
+        }
+    });
+    dataTable.on('click', '.btn-detail', function () {
+        var productId = $(this).data('id');
+        window.location.href = '/Admin/Events/' + productId;
+    });
+</script>
+</body>
+</html>
+
